@@ -174,7 +174,7 @@ class ServicesMigrator
     private function editFile(string $path, array $replace): void
     {
         if (pathinfo($path)['extension'] === 'yml') {
-            $replace = Yaml::dump($replace, 10, 2);
+            $replace = Yaml::dump($replace, 4, 2);
         } else {
             $replace = implode('', $replace);
         }
