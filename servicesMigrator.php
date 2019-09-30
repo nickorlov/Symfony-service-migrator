@@ -21,6 +21,8 @@ class ServicesMigrator
 
     private $multiInstantiatedClasses = [];
 
+    private $multiInstantiatedClassesCount = [];
+
     public function __construct(string $workingDirectory)
     {
         $timeStart = microtime(true);
@@ -37,6 +39,10 @@ class ServicesMigrator
             $count--;
         };
         $this->save($this->resultTree);
+        echo sprintf("Multi-instantiated classes (%s):\n", count($this->multiInstantiatedClassesCount));
+        foreach ($this->multiInstantiatedClassesCount as $item) {
+            echo '- '.$item."\n";
+        }
         echo 'Total execution time in seconds: '.(microtime(true) - $timeStart)."\n";
     }
 
@@ -93,6 +99,9 @@ class ServicesMigrator
                     $data = $this->yamlProcess($serviceDefinition, $className, $item, $data);
                 } else {
                     if (!$className) {
+                        continue;
+                    }
+                    if ($this->hasMultipleDefinitions($className)) {
                         continue;
                     }
                     $classContainService = false;
@@ -242,8 +251,9 @@ class ServicesMigrator
                 $item['data']['services'][$serviceDefinition]['public'] = true;
             }
             if ($className) {
-                if (in_array($className, $this->multiInstantiatedClasses)
-                    && $this->multiInstantiatedClasses[$className] > 1) {
+                if ($this->hasMultipleDefinitions($className)) {
+                    $this->multiInstantiatedClassesCount[] = $serviceDefinition;
+
                     return $data;
                 }
                 unset($data['services'][$serviceDefinition]);
@@ -253,7 +263,7 @@ class ServicesMigrator
                 $data = $item['data'];
             }
         }
-        if ($className) {
+        if ($className && !$this->hasMultipleDefinitions($className)) {
             $data['services'] = $this->rewriteServiceArray($data['services'], $serviceDefinition, $className);
         }
 
@@ -275,5 +285,10 @@ class ServicesMigrator
         }
 
         return $data;
+    }
+
+    private function hasMultipleDefinitions($className)
+    {
+        return isset($this->multiInstantiatedClasses[$className]) && $this->multiInstantiatedClasses[$className] > 1;
     }
 }
