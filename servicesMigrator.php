@@ -102,6 +102,7 @@ class ServicesMigrator
                         continue;
                     }
                     if ($this->hasMultipleDefinitions($className)) {
+                        $result[$key] = $item;
                         continue;
                     }
                     $classContainService = false;
