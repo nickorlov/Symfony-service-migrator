@@ -4,4 +4,4 @@ use Xircl\ServicesMigrator;
 
 require 'vendor/autoload.php';
 
-$migrator = new servicesMigrator(realpath('.'));
+$migrator = new ServicesMigrator(realpath('.'));
